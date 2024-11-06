@@ -1,0 +1,112 @@
+import numpy as np
+import os
+import glob
+
+
+def read_data(directory="", fn_prefix="", fn_suffix="", ftype="csv", delimiter=","):
+    """
+    Reads numeric content from files ending on ftype and located in directory,
+    where the delimiter denotes the column separator
+    :param directory: STR of path to files
+    :param fn_prefix: STR of file prefix to strip dict-keys from file name
+    :param fn_suffix: STR of file suffix to strip dict-keys from file name
+    :param ftype: STR of file endings
+    :param delimiter: STR of column separator
+    :return: DICT of file contents
+    """
+
+    # derive file list with glob library
+    # make sure to not introduce an additional folder level through an endswith-test
+    if directory.endswith("/") or directory.endswith("\\"):
+        file_list = glob.glob(directory + "*." + ftype.strip("."))
+    else:
+        file_list = glob.glob(directory + "/*." + ftype.strip("."))
+
+    file_content_dict = {}
+
+    for file in file_list:
+        # generate key for dictionary entry
+        raw_file_name = file.split("/")[-1].split("\\")[-1].split(".%s" % ftype)[0]
+        try:
+            dict_key = int(raw_file_name.strip(fn_prefix).strip(fn_suffix))
+        except ValueError:
+            dict_key = raw_file_name.strip(fn_prefix).strip(fn_suffix)
+
+        # read file contents
+        with open(file, mode="r") as f:
+
+            # get dimensions of file contents
+            f_content = f.read()
+            rows = f_content.strip("\n").split("\n").__len__()
+            cols = f_content.strip("\n").split("\n")[0].strip(delimiter).split(delimiter).__len__()
+            # create empty numpy array that fits file content size
+            data_array = np.ones((rows, cols)) * np.nan
+
+            # write file contents to np.array
+            for iteration, line in enumerate(f_content.strip("\n").split("\n")):
+                # create empty list
+                line_data = []
+                # append line elements as numeric list elements and use np.nan where non-numeric
+                for e in line.strip(delimiter).split(delimiter):
+                    try:
+                        line_data.append(float(e))
+                    except ValueError:
+                        line_data.append(np.nan)
+                # write line_data as numpy.array to the file data array
+                data_array[iteration] = np.array(line_data)
+
+            # write (append) file contents to results dictionary
+            file_content_dict.update({dict_key: data_array})
+        print(" * appended dict key {0} with contents from file {1}".format(str(dict_key), raw_file_name))
+    return file_content_dict
+
+def daily2monthly(daily_flow_series):
+    pass
+
+
+def find_seasonal_extrema(storage_line):
+    pass
+
+
+def sequent_peak(in_vol_series, out_vol_target):
+    """
+    Calculate required storage volume for a seasonal reservoir-type
+    :param in_vol_series: 
+    :param out_vol_target: 
+    :return: 
+    """
+    # create storage-difference SD dictionary
+    SD_dict = {}
+    for year, monthly_volume in in_vol_series.items():
+        # add a new dicionary entry for every year
+        SD_dict.update({year: []})
+        for month_no, in_vol in enumerate(monthly_volume):
+            # append one list entry per month (i.e.,  In_m - Out_m)
+            SD_dict[year].append(in_vol - out_vol_target[month_no])
+    #flatten SD dict to create SD line
+    SD_line = []
+    for year in SD_dict.keys():
+        for vol in SD_dict
+    pass
+
+
+if __name__ == "__main__":
+    # LOAD DATA
+    file_directory = os.path.abspath("") + "\\flows\\"
+    daily_flow_dict = read_data(directory=file_directory, ftype="csv",
+                                fn_prefix="daily_flows_", fn_suffix="",
+                                delimiter=";")
+    try:
+        print(daily_flow_dict[1979])
+    except KeyError:
+        print("Oh no, something went wrong - check your code.")
+
+    # CONVERT DAILY TO MONTHLY DATA
+    # monthly_vol_dict = {}
+
+    # MAKE ARRAY OF MONTHLY SUPPLY VOLUMES (IN MILLION CMS)
+    # monthly_supply = np.array([1.5, 1.5, 1.5, 2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 3.0, 2.0, 1.5])
+
+    # GET REQUIRED STORAGE VOLUME FROM SEQUENT PEAK ALGORITHM
+    # required_storage = sequent_peak(in_vol_series=monthly_vol_dict,
+    #                                 out_vol_target=monthly_supply)
