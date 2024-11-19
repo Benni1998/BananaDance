@@ -1,0 +1,137 @@
+import pandas as pd
+file = 'XS-morphology.csv'
+data = pd.read_csv(file)
+data.head(2)
+print("Sum of missing values: " + str(data.isnull().sum()))
+print("Sum of duplicated rows: " + str(data.duplicated()))
+data.describe()
+for column in data.columns:
+    if not "morph" in str(column).lower():
+        data[column].plot(kind='hist')
+data["Q"].plot(kind='hist')
+for column in data.columns:
+    try:
+        Q1 = data[column].quantile(0.25)
+        Q3 = data[column].quantile(0.75)
+        IQR = Q3 - Q1
+        outliers = data[(data[column] < Q1 - 1.5 * IQR) | (data[column] > Q3 + 1.5 * IQR)]
+        print("Outliers in column " + str(column) + ": " + str(outliers))
+    except TypeError:
+        print(f"Column '{column}' is not numeric.")
+import scipy.stats as stats
+import numpy as np
+numeric_columns = data.select_dtypes(include=[np.number])
+normality_results = {}
+for column in numeric_columns:
+    stat, p_value = stats.shapiro(numeric_columns[column])
+    normality_results[column] = {"Statistic": stat, "p-value": p_value, "Normality": p_value > 0.05}
+normality_results
+import matplotlib.pyplot as plt
+
+
+def create_qq_plots(df):
+    for column in df.columns:
+        # Drop missing values
+        column_data = df[column].dropna()
+
+        # Generate QQ plot
+        plt.figure()
+        stats.probplot(column_data, dist="norm", plot=plt)
+        plt.title(f"QQ Plot for {column}")
+        plt.xlabel("Theoretical Quantiles")
+        plt.ylabel("Sample Quantiles")
+        plt.show()
+create_qq_plots(numeric_columns)
+distributions = ['norm', 'lognorm', 'expon', 'gamma', 'weibull_min']
+best_fit_results = {}
+
+for column in numeric_columns:
+    column_data = numeric_columns[column].dropna()  # Removing NaNs
+    best_fit = {'distribution': None, 'p_value': 0}
+
+    for dist_name in distributions:
+        dist = getattr(stats, dist_name)
+        params = dist.fit(column_data)
+
+        # Perform the Kolmogorov-Smirnov test
+        ks_stat, p_value = stats.kstest(column_data, dist_name, args=params)
+
+        # Keep track of the distribution with the highest p-value
+        if p_value > best_fit['p_value']:
+            best_fit = {'distribution': dist_name, 'p_value': p_value, 'params': params}
+
+    best_fit_results[column] = best_fit
+
+best_fit_results
+spearman_correlation = numeric_columns.corr(method='spearman')
+print(spearman_correlation)
+
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform( numeric_columns )
+pca = PCA(n_components=2)  # Specify the number of principal components
+principal_components = pca.fit_transform( scaled_data)
+
+# Create a DataFrame with the PCA results
+pca_df = pd.DataFrame(data=principal_components, columns=['PC1', 'PC2'])
+plt.scatter(pca_df['PC1'], pca_df['PC2'])
+from fitter import Fitter, get_common_distributions
+distributions = ['norm', 'lognorm', 'expon', 'gamma', 'weibull_min']
+best_fitter_results = {}
+
+for column in numeric_columns.columns:
+    column_data = numeric_columns[column].dropna()  # Removing NaNs
+
+    f = Fitter(column_data, distributions=distributions)
+    f.fit()  # Fit distributions to the data
+
+    best_distribution = f.get_best()
+    best_fitter_results[column] = best_distribution
+    print(f"Best fitting distribution for {column}: {best_distribution}")
+
+# Standardisierung der Daten
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(numeric_columns)
+
+# PCA mit 2 Hauptkomponenten
+pca = PCA(n_components=2)
+principal_components = pca.fit_transform(scaled_data)
+
+# Erklärung der Varianz durch die Hauptkomponenten
+explained_variance = pca.explained_variance_ratio_
+print("Erklärte Varianz pro Hauptkomponente:")
+print(f"PC1: {explained_variance[0]:.2%}")
+print(f"PC2: {explained_variance[1]:.2%}")
+
+# Ergebnisse der PCA in einen DataFrame umwandeln
+pca_df = pd.DataFrame(data=principal_components, columns=['PC1', 'PC2'])
+
+# Streudiagramm der ersten beiden Hauptkomponenten
+plt.figure(figsize=(8, 6))
+plt.scatter(pca_df['PC1'], pca_df['PC2'], alpha=0.7, color='blue')
+plt.title("PCA Scatter Plot")
+plt.xlabel("Principal Component 1")
+plt.ylabel("Principal Component 2")
+plt.grid(True)
+plt.show()
+
+# Ladungen der Features für die Hauptkomponenten
+loadings = pca.components_.T  # Transponieren, um Features x PCs zu erhalten
+
+# Plot der Ladungen (Balkendiagramm)
+plt.figure(figsize=(10, 6))
+
+# PC1-Ladungen
+plt.bar(range(len(loadings[:, 0])), loadings[:, 0], alpha=0.7, color='red', label='PC1')
+# PC2-Ladungen
+plt.bar(range(len(loadings[:, 1])), loadings[:, 1], alpha=0.7, color='green', label='PC2')
+
+# Achsentitel und Labels
+plt.title("Feature Loadings for Principal Components")
+plt.xlabel("Features (Index)")
+plt.ylabel("Loading Values")
+plt.xticks(range(len(numeric_columns.columns)), numeric_columns.columns, rotation=90)
+plt.axhline(0, color='black', linewidth=0.8)
+plt.legend()
+plt.show()
