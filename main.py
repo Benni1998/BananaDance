@@ -68,7 +68,7 @@ def calculate():
             XS1QS4 = 200
 
         # 50 Grad geneigte Wand links am Querschnitt XS1
-        angle2 = math.radians(60)
+        angle2 = math.radians(77)
         XS1QS5 = ((waterleveluser ** 2) * math.tan(angle2)) / 2
 
         XS1QS6 = (((waterleveluser - 50) ** 2) * math.tan(angle2)) / 2
@@ -81,47 +81,37 @@ def calculate():
 
         SUMXS1QS = XS1QS1 + XS1QS2 + XS1QS3 + XS1QS4 + XS1QS5 + XS1QS6 + XS1QS7
 
-        # XS2 Messpunkt Berechnung: Insgesamt 7 Querschnittsteile
-        XS4QS1 = (waterleveluser - 22.5) * 50
+        # XS4 Messpunkt Berechnung: Insgesamt 7 Querschnittsteile
+
         if waterleveluser <= 22.5:
-            XS4QS1 = 0
+            print("Groundfloor")
+            XS4QS1 = 0.
+            XS4QS2 = waterleveluser * (40 + 2 * waterleveluser)
+            XS4QS3 = 0.
+            XS4QS4 = 0.
+            XS4QS5 = 0.
+        if (waterleveluser > 22.5) & (waterleveluser <= 65):
+            print("First floor")
+            XS4QS1 = (waterleveluser - 22.5) * 5.
+            XS4QS2 = 22.5 * (40 + 2 * 22.5)
+            XS4QS3 = (waterleveluser - 22.5) * (40 + 2 * 2 * waterleveluser)
+            XS4QS4 = 0.5 * (waterleveluser - 22.5) * (130 - 22.5 * 2)
+            XS4QS5 = 0.
+        if waterleveluser > 65:
+            print("Second floor")
+            XS4QS1 = (waterleveluser - 22.5) * 5.
+            XS4QS2 = 22.5 * (40 + 2 * 22.5)
+            XS4QS3 = (65 - 22.5) * (40 + 2 * 2 * 65)
+            XS4QS4 = 0.5 * (65 - 22.5) * (130 - 22.5 * 2)
+            XS4QS5 = (250 - 5) * (waterleveluser - 65)
 
-        XS4QS2 = waterleveluser ** 2
-        if waterleveluser >= 22.5:
-            XS4QS2 = 22.5 ** 2
+        sumXS4QS = XS4QS1 + XS4QS2 + XS4QS3 + XS4QS4 + XS4QS5
 
-        XS4QS3 = waterleveluser * 40
-
-        XS4QS4 = waterleveluser ** 2
-        if waterleveluser >= 65:
-            XS4QS4 = 65 ** 2
-
-        XS4QS5 = (waterleveluser - 65) * 160
-        if waterleveluser <= 65:
-            XS4QS5 = 0
-
-        SUMXS4QS = XS4QS1 + XS4QS2 + XS4QS3 + XS4QS4 + XS4QS5
-
-        # UProfil CS1 Berechnung
-        # CS1BoolBox = (option8_var.get())
-        # if(CS1BoolBox == True):
-        #    CS1WaterLevel = float(entry5.get())
-        #   velocityuser = float(entry6.get())
-        # else:
-        # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
-        #    messagebox.showerror("Fehler", "Füllen Sie bitte alle Eingabfelder aus")
-
-        # CS1SUM = CS1WaterLevel * 6
-        # result = 1500000 / CS1SUM
 
         if (XS1BoolBox == True and XS2BoolBox == False and XS3BoolBox == False and XS4BoolBox == False):
             SUM = SUMXS1QS
-        # elif (XS2BoolBox == True and XS1BoolBox == False and XS3BoolBox == False and XS4BoolBox == False):
-        #    SUM = SUMXS2QS
-        # elif (XS3BoolBox == True and XS1BoolBox == False and XS2BoolBox == False and XS4BoolBox == False):
-        #    SUM = SUMXS3QS
         elif (XS4BoolBox == True and XS1BoolBox == False and XS2BoolBox == False and XS3BoolBox == False):
-            SUM = SUMXS4QS
+            SUM = sumXS4QS
         elif (XS1BoolBox == True and XS4BoolBox == True):
             # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
             messagebox.showerror("Fehler", "Bitte wählen Sie nur EINEN Messpunkt")
@@ -163,11 +153,11 @@ def calculate():
         elif XS4BoolBox == True:
             calculate.SpeedValue2 = result
             if (HQ100 == True and MQ == False and Q30 == False):
-                calculate.XS4AbflussMenge = (velocityuser * SUMXS4QS) / 1000000
+                calculate.XS4AbflussMenge = (velocityuser * sumXS4QS) / 1000000
             elif (MQ == True and Q30 == False and HQ100 == False):
-                calculate.XS4AbflussMenge = (velocityuser * SUMXS4QS) / 135000
+                calculate.XS4AbflussMenge = (velocityuser * sumXS4QS) / 135000
             elif (Q30 == True and HQ100 == False and MQ == False):
-                calculate.XS4AbflussMenge = (velocityuser * SUMXS4QS) / 60000
+                calculate.XS4AbflussMenge = (velocityuser * sumXS4QS) / 60000
 
     except ValueError:
         # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
