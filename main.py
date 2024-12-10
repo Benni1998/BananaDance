@@ -2,12 +2,13 @@ import tkinter as tk
 from tkinter import messagebox
 import math
 
+
 def show_selected_options():
     # Eingabefelder auslesen
     input1 = entry1.get()
     input2 = entry2.get()
 
-    # Ausgewählte Optionen auslesen
+    # Ausgewaehlte Optionen auslesen
     selected_options = []
     if option1_var.get():
         selected_options.append("Option 1")
@@ -17,14 +18,13 @@ def show_selected_options():
         selected_options.append("Option 3")
 
     # Ergebnis anzeigen
-    messagebox.showinfo("Selected Options", f"Eingabefeld 1: {input1}\nEingabefeld 2: {input2}\nAusgewählt: {', '.join(selected_options)}")
+    messagebox.showinfo("Selected Options",
+                        f"Eingabefeld 1: {input1}\nEingabefeld 2: {input2}\nAusgewählt: {', '.join(selected_options)}")
+
 
 def calculate():
     try:
         # Wert aus Eingabefeld 1 auslesen und in eine Zahl umwandeln
-
-
-
         HQ100 = (option1_var.get())
         MQ = (option2_var.get())
         Q30 = (option3_var.get())
@@ -33,95 +33,92 @@ def calculate():
         XS3BoolBox = (option6_var.get())
         XS4BoolBox = (option7_var.get())
 
-        if (XS1BoolBox == True):
+        if XS1BoolBox:
             waterleveluser = float(entry1.get())
             velocityuser = float(entry2.get())
-        elif(XS4BoolBox == True):
+        elif XS4BoolBox:
             waterleveluser = float(entry3.get())
             velocityuser = float(entry4.get())
-        else:
-            # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
-            messagebox.showerror("Fehler", "Füllen Sie bitte alle Eingabfelder aus")
-
-
+        # else:
+        # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
+        # messagebox.showerror("Fehler", "Füllen Sie bitte alle Eingabfelder aus")
 
         # XS1 Messpunkt Berechnung: Insgesamt 7 Querschnittsteile
         XS1QS1 = waterleveluser * 40
-        XS1QS2 = ((waterleveluser-20) * 107.5) - ((4.5 * 87.5)/2)
-        #Bedingung: Dreieck abziehen (4,5cm) auf 87,5cm länge zusätzlich keine Werte, wenn Wasserstand kleiner gleich 20cm
-        if (waterleveluser <= 20):
+        XS1QS2 = ((waterleveluser - 20) * 107.5) - ((4.5 * 87.5) / 2)
+
+        # Bedingung: Dreieck abziehen (4,5cm) auf 87,5cm länge zusätzlich keine Werte, wenn Wasserstand kleiner gleich 20cm
+        if waterleveluser <= 20:
             XS1QS2 = 0
-        elif (waterleveluser <= 24.5):
+        elif waterleveluser <= 24.5:
             # 2,944 Grad in Radiant umrechnen
             angle1 = math.radians(2.944)
             # Tangens von 2,944 Grad berechnen und die Länge des Dreickes bestimmen
             length1 = (waterleveluser - 20) / math.tan(angle1)
-
             XS1QS2 = ((waterleveluser - 20) * 107.5) - (((waterleveluser - 20) * length1) / 2)
 
-        XS1QS3 = ((waterleveluser - 24.5) ** 2)/2
-        if (waterleveluser <= 24.5):
+        XS1QS3 = ((waterleveluser - 24.5) ** 2) / 2
+        if waterleveluser <= 24.5:
             XS1QS3 = 0
-        elif (waterleveluser >= 50):
+        elif waterleveluser >= 50:
             XS1QS3 = 325.125
 
-        XS1QS4 = (waterleveluser ** 2)/2
-        if (waterleveluser >= 20):
+        XS1QS4 = (waterleveluser ** 2) / 2
+        if waterleveluser >= 20:
             XS1QS4 = 200
 
-        #20Grad geneigte Wand links am Querschnitt XS1
-        angle2 = math.radians(20)
-        XS1QS5 = ((waterleveluser ** 2)*math.tan(angle2))/2
+        # 50 Grad geneigte Wand links am Querschnitt XS1
+        angle2 = math.radians(60)
+        XS1QS5 = ((waterleveluser ** 2) * math.tan(angle2)) / 2
 
-        XS1QS6 = (((waterleveluser - 50) ** 2)*math.tan(angle2))/2
-        if (waterleveluser <= 50):
+        XS1QS6 = (((waterleveluser - 50) ** 2) * math.tan(angle2)) / 2
+        if waterleveluser <= 50:
             XS1QS6 = 0
 
         XS1QS7 = ((waterleveluser - 50) * 62.5)
-        if (waterleveluser <= 50):
+        if waterleveluser <= 50:
             XS1QS7 = 0
 
         SUMXS1QS = XS1QS1 + XS1QS2 + XS1QS3 + XS1QS4 + XS1QS5 + XS1QS6 + XS1QS7
 
         # XS2 Messpunkt Berechnung: Insgesamt 7 Querschnittsteile
         XS4QS1 = (waterleveluser - 22.5) * 50
-        if (waterleveluser <= 22.5):
+        if waterleveluser <= 22.5:
             XS4QS1 = 0
 
-        XS4QS2 = (waterleveluser ** 2)
-        if (waterleveluser >= 22.5):
+        XS4QS2 = waterleveluser ** 2
+        if waterleveluser >= 22.5:
             XS4QS2 = 22.5 ** 2
 
         XS4QS3 = waterleveluser * 40
 
-        XS4QS4 = (waterleveluser ** 2)
-        if (waterleveluser >= 65):
+        XS4QS4 = waterleveluser ** 2
+        if waterleveluser >= 65:
             XS4QS4 = 65 ** 2
 
-        XS4QS5 = ((waterleveluser - 65) * 160)
-        if (waterleveluser <= 65):
+        XS4QS5 = (waterleveluser - 65) * 160
+        if waterleveluser <= 65:
             XS4QS5 = 0
 
         SUMXS4QS = XS4QS1 + XS4QS2 + XS4QS3 + XS4QS4 + XS4QS5
 
-        #UProfil CS1 Berechnung
-        #CS1BoolBox = (option8_var.get())
-        #if(CS1BoolBox == True):
+        # UProfil CS1 Berechnung
+        # CS1BoolBox = (option8_var.get())
+        # if(CS1BoolBox == True):
         #    CS1WaterLevel = float(entry5.get())
-         #   velocityuser = float(entry6.get())
-        #else:
-            # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
+        #   velocityuser = float(entry6.get())
+        # else:
+        # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
         #    messagebox.showerror("Fehler", "Füllen Sie bitte alle Eingabfelder aus")
 
-        #CS1SUM = CS1WaterLevel * 6 
-        #result = 1500000 / CS1SUM
-
+        # CS1SUM = CS1WaterLevel * 6
+        # result = 1500000 / CS1SUM
 
         if (XS1BoolBox == True and XS2BoolBox == False and XS3BoolBox == False and XS4BoolBox == False):
             SUM = SUMXS1QS
-        #elif (XS2BoolBox == True and XS1BoolBox == False and XS3BoolBox == False and XS4BoolBox == False):
+        # elif (XS2BoolBox == True and XS1BoolBox == False and XS3BoolBox == False and XS4BoolBox == False):
         #    SUM = SUMXS2QS
-        #elif (XS3BoolBox == True and XS1BoolBox == False and XS2BoolBox == False and XS4BoolBox == False):
+        # elif (XS3BoolBox == True and XS1BoolBox == False and XS2BoolBox == False and XS4BoolBox == False):
         #    SUM = SUMXS3QS
         elif (XS4BoolBox == True and XS1BoolBox == False and XS2BoolBox == False and XS3BoolBox == False):
             SUM = SUMXS4QS
@@ -131,8 +128,6 @@ def calculate():
         else:
             # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
             messagebox.showerror("Fehler", "Bitte wählen Sie einen Messpunkt")
-
-
 
         if (HQ100 == True and MQ == False and Q30 == False):
             result = 1000000 / SUM
@@ -144,8 +139,7 @@ def calculate():
             # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
             messagebox.showerror("Fehler", "Bitte wählen Sie ein Szenario für die Berechnung aus.")
 
-
-        #Vergleich mit gemessener Geschwindigkeit
+        # Vergleich mit gemessener Geschwindigkeit
         Abweichung = ((velocityuser - result) / result) * 100
         result = round(result, 2)
         Abweichung = round(Abweichung, 2)
@@ -155,10 +149,9 @@ def calculate():
         messagebox.showinfo("Berechnungsergebnis", f"Das Ergebnis der Berechnung ist: {result} cm/s"
                                                    f"\n"
                                                    f"\n{Empfehlung},um {Abweichung} %")
-        #messagebox.showinfo("Berechnungsergebnis", f"Die Abweichung der Berechnung ist: {Abweichung}%")
+        # messagebox.showinfo("Berechnungsergebnis", f"Die Abweichung der Berechnung ist: {Abweichung}%")
 
-
-        if (XS1BoolBox == True):
+        if XS1BoolBox == True:
             calculate.SpeedValue1 = result
             if (HQ100 == True and MQ == False and Q30 == False):
                 calculate.XS1AbflussMenge = (velocityuser * SUMXS1QS) / 1000000
@@ -167,8 +160,7 @@ def calculate():
             elif (Q30 == True and HQ100 == False and MQ == False):
                 calculate.XS1AbflussMenge = (velocityuser * SUMXS1QS) / 60000
 
-
-        elif(XS4BoolBox == True):
+        elif XS4BoolBox == True:
             calculate.SpeedValue2 = result
             if (HQ100 == True and MQ == False and Q30 == False):
                 calculate.XS4AbflussMenge = (velocityuser * SUMXS4QS) / 1000000
@@ -177,13 +169,11 @@ def calculate():
             elif (Q30 == True and HQ100 == False and MQ == False):
                 calculate.XS4AbflussMenge = (velocityuser * SUMXS4QS) / 60000
 
-
-
-
     except ValueError:
         # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
         messagebox.showerror("Fehler", "Bitte geben Sie eine gültige Zahl in Water Level ein.")
     return result
+
 
 def massebilanz():
     try:
@@ -199,33 +189,34 @@ def massebilanz():
         XS1AbflussMenge = round(XS1AbflussMenge, 2)
         XS4AbflussMenge = round(XS4AbflussMenge, 2)
 
-        messagebox.showinfo("Berechnungsergebnis", f"XS1 Bilanz : {XS1AbflussMenge} m^3/s\nXS4 Bilanz : {XS4AbflussMenge} m^3/s"
-                                               f"\nDie Abweichung beider Werte ist {Abweichung} %")
+        messagebox.showinfo("Berechnungsergebnis",
+                            f"XS1 Bilanz : {XS1AbflussMenge} m^3/s\nXS4 Bilanz : {XS4AbflussMenge} m^3/s"
+                            f"\nDie Abweichung beider Werte ist {Abweichung} %")
 
     except AttributeError:
         # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
         messagebox.showerror("Fehler", "Bitte berechnen Sie noch XS4 für die Bilanzergebnisse.")
+
 
 # Hauptfenster erstellen
 root = tk.Tk()
 root.title("Berechnung der Viskosität")
 
 option4_var = tk.BooleanVar()
-option5_var = tk.BooleanVar() #XS2
-option6_var = tk.BooleanVar() #XS3
+option5_var = tk.BooleanVar()  # XS2
+option6_var = tk.BooleanVar()  # XS3
 option7_var = tk.BooleanVar()
 
-option8_var = tk.BooleanVar() #UProfilCheckBox
+option8_var = tk.BooleanVar()  # UProfilCheckBox
 option9_var = tk.BooleanVar()
 
 tk.Checkbutton(root, text="Messpunkt XS1", variable=option4_var).grid(row=0, column=0, columnspan=1, padx=10, pady=10)
-#tk.Checkbutton(root, text="Messpunkt XS2", variable=option5_var).grid(row=0, column=1, padx=10, pady=10)
-#tk.Checkbutton(root, text="Messpunkt XS3", variable=option6_var).grid(row=0, column=2, padx=10, pady=10)
-tk.Checkbutton(root, text="Messpunkt XS4", variable=option7_var).grid(row=0, column=1, columnspan=1,padx=10, pady=10)
+# tk.Checkbutton(root, text="Messpunkt XS2", variable=option5_var).grid(row=0, column=1, padx=10, pady=10)
+# tk.Checkbutton(root, text="Messpunkt XS3", variable=option6_var).grid(row=0, column=2, padx=10, pady=10)
+tk.Checkbutton(root, text="Messpunkt XS4", variable=option7_var).grid(row=0, column=1, columnspan=1, padx=10, pady=10)
 
-#tk.Checkbutton(root, text="Messpunkt UProfil CS1", variable=option8_var).grid(row=0, column=5, columnspan=1, padx=10, pady=10)
-#tk.Checkbutton(root, text="Bilanz XS2 und XS3", variable=option9_var).grid(row=5, column=1, columnspan=1, padx=10, pady=10)
-
+# tk.Checkbutton(root, text="Messpunkt UProfil CS1", variable=option8_var).grid(row=0, column=5, columnspan=1, padx=10, pady=10)
+# tk.Checkbutton(root, text="Bilanz XS2 und XS3", variable=option9_var).grid(row=5, column=1, columnspan=1, padx=10, pady=10)
 
 # Eingabefelder
 tk.Label(root, text="Water Level:").grid(row=1, column=0, columnspan=1, padx=10, pady=10)
@@ -244,28 +235,24 @@ tk.Label(root, text="Velocity2:").grid(row=2, column=2, columnspan=1, padx=10, p
 entry4 = tk.Entry(root)
 entry4.grid(row=2, column=3, columnspan=1, padx=10, pady=10)
 
-#tk.Label(root, text="Water Level UProfil:").grid(row=1, column=4, columnspan=1, padx=10, pady=10)
-#entry5 = tk.Entry(root)
-#entry5.grid(row=1, column=5, columnspan=1, padx=10, pady=10)
+# tk.Label(root, text="Water Level UProfil:").grid(row=1, column=4, columnspan=1, padx=10, pady=10)
+# entry5 = tk.Entry(root)
+# entry5.grid(row=1, column=5, columnspan=1, padx=10, pady=10)
 
-#tk.Label(root, text="Velocity UProfil:").grid(row=2, column=4, columnspan=1, padx=10, pady=10)
-#entry6 = tk.Entry(root)
-#entry6.grid(row=2, column=5, columnspan=1, padx=10, pady=10)
-
-
+# tk.Label(root, text="Velocity UProfil:").grid(row=2, column=4, columnspan=1, padx=10, pady=10)
+# entry6 = tk.Entry(root)
+# entry6.grid(row=2, column=5, columnspan=1, padx=10, pady=10)
 
 # Auswahlfelder
 option1_var = tk.BooleanVar()
 option2_var = tk.BooleanVar()
 option3_var = tk.BooleanVar()
-#option4_var = tk.BooleanVar()
+# option4_var = tk.BooleanVar()
 
 tk.Checkbutton(root, text="HQ100=1m^3/s", variable=option1_var).grid(row=3, column=0, columnspan=1, padx=10, pady=10)
 tk.Checkbutton(root, text="MQ=0,135m^3/s", variable=option2_var).grid(row=3, column=1, columnspan=1, padx=10, pady=10)
 tk.Checkbutton(root, text="Q30=0,06m^3/s", variable=option3_var).grid(row=3, column=2, columnspan=1, padx=10, pady=10)
-#tk.Checkbutton(root, text="QUProfil=1,5m^3/s", variable=option4_var).grid(row=3, column=5, columnspan=1, padx=10, pady=10)
-
-
+# tk.Checkbutton(root, text="QUProfil=1,5m^3/s", variable=option4_var).grid(row=3, column=5, columnspan=1, padx=10, pady=10)
 
 # Button zum Anzeigen der ausgewählten Optionen
 tk.Button(root, text="Massebilanz nachweisen", command=massebilanz).grid(row=6, column=0, columnspan=5, pady=20)
@@ -275,3 +262,4 @@ tk.Button(root, text="Berechnung durchführen", command=calculate).grid(row=4, c
 
 # Hauptschleife starten
 root.mainloop()
+
