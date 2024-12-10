@@ -1,122 +1,277 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import re
-from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.ticker import MultipleLocator
+import tkinter as tk
+from tkinter import messagebox
+import math
 
-# Funktion, um die Daten aus einer Datei zu extrahieren und nach Abschnitten zu trennen
-def extract_sections_from_file(file_path):
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
+def show_selected_options():
+    # Eingabefelder auslesen
+    input1 = entry1.get()
+    input2 = entry2.get()
 
-    sections = []
-    current_section = []
+    # Ausgewählte Optionen auslesen
+    selected_options = []
+    if option1_var.get():
+        selected_options.append("Option 1")
+    if option2_var.get():
+        selected_options.append("Option 2")
+    if option3_var.get():
+        selected_options.append("Option 3")
 
-    for line in lines:
-        if "STOP" in line:
-            if current_section:
-                sections.append(current_section)
-                current_section = []
+    # Ergebnis anzeigen
+    messagebox.showinfo("Selected Options", f"Eingabefeld 1: {input1}\nEingabefeld 2: {input2}\nAusgewählt: {', '.join(selected_options)}")
+
+def calculate():
+    try:
+        # Wert aus Eingabefeld 1 auslesen und in eine Zahl umwandeln
+
+
+
+        HQ100 = (option1_var.get())
+        MQ = (option2_var.get())
+        Q30 = (option3_var.get())
+        XS1BoolBox = (option4_var.get())
+        XS2BoolBox = (option5_var.get())
+        XS3BoolBox = (option6_var.get())
+        XS4BoolBox = (option7_var.get())
+
+        if (XS1BoolBox == True):
+            waterleveluser = float(entry1.get())
+            velocityuser = float(entry2.get())
+        elif(XS4BoolBox == True):
+            waterleveluser = float(entry3.get())
+            velocityuser = float(entry4.get())
         else:
-            current_section.append(line)
-
-    if current_section:
-        sections.append(current_section)
-
-    return sections
-
-# Funktion, um die gültigen Partikel und ihre umgerechneten Werte aus einem Abschnitt zu extrahieren
-def extract_valid_particles(section):
-    valid_particles = []
-
-    for line in section:
-        if "LogBlueprintUserMessages" in line:
-            # Überprüfen, ob die Zeile KEY, VECTOR und VELOCITY enthält
-            key_match = re.search(r'KEY: \d+', line)
-            vector_match = re.search(r'VECTOR: X=[-.\d]+ Y=[-.\d]+ Z=[-.\d]+', line)
-            velocity_match = re.search(r'VELOCITY: [-.\d]+', line)
-
-            # Nur gültige Partikel speichern
-            if key_match and vector_match and velocity_match:
-                y_match = re.search(r'Y=([-\d.]+)', line)
-                z_match = re.search(r'Z=([-\d.]+)', line)
-                velocity_value = round(float(velocity_match.group(0).split(": ")[1].replace(",", ".")) / 100, 2)  # Velocity in m/s umrechnen und auf 2 Dezimalstellen runden
+            # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
+            messagebox.showerror("Fehler", "Füllen Sie bitte alle Eingabfelder aus")
 
 
-                if y_match and z_match:
-                    y_value = float(y_match.group(1)) / 100  # Y-Wert von cm in m umrechnen
-                    z_value = float(z_match.group(1)) / 100  # Z-Wert von cm in m umrechnen
-                    valid_particles.append([y_value, z_value, velocity_value])
 
-    data_array = np.array(valid_particles)
-    return data_array
+        # XS1 Messpunkt Berechnung: Insgesamt 7 Querschnittsteile
+        XS1QS1 = waterleveluser * 40
+        XS1QS2 = ((waterleveluser-20) * 107.5) - ((4.5 * 87.5)/2)
+        #Bedingung: Dreieck abziehen (4,5cm) auf 87,5cm länge zusätzlich keine Werte, wenn Wasserstand kleiner gleich 20cm
+        if (waterleveluser <= 20):
+            XS1QS2 = 0
+        elif (waterleveluser <= 24.5):
+            # 2,944 Grad in Radiant umrechnen
+            angle1 = math.radians(2.944)
+            # Tangens von 2,944 Grad berechnen und die Länge des Dreickes bestimmen
+            length1 = (waterleveluser - 20) / math.tan(angle1)
 
-# Funktion, um den Durchschnitt der Velocity zu berechnen
-def calculate_average_velocity(data):
-    if data.size == 0:
-        return 0  # Vermeide Division durch 0
-    velocity = data[:, 2]
-    return round(np.mean(velocity), 2)  # Durchschnitt berechnen und auf 2 Nachkommastellen runden
+            XS1QS2 = ((waterleveluser - 20) * 107.5) - (((waterleveluser - 20) * length1) / 2)
 
-# Benutzerdefinierte Colormap erstellen
-def create_custom_cmap():
-    colors = [
-        (0.0, (0, 0, 0.5)),  # Dunkelblau bei Wert 0
-        (0.125, (0, 0, 1.0)),  # Blau bei Wert 0.25 m/s
-        (0.375, (0, 1.0, 1.0)),  # Cyan bei Wert 0.75 m/s
-        (0.5, (0, 1.0, 0)),  # Grün bei Wert 1 m/s
-        (0.625, (1.0, 1.0, 0)),  # Gelb bei Wert 1.25 m/s
-        (0.875, (1.0, 0, 0)),  # Rot bei Wert 1.75 m/s
-        (1.0, (0.5, 0, 0))  # Dunkelrot bei Wert 2.00 m/s
-    ]
-    cmap_name = 'custom_rainbow'
-    return LinearSegmentedColormap.from_list(cmap_name, colors)
+        XS1QS3 = ((waterleveluser - 24.5) ** 2)/2
+        if (waterleveluser <= 24.5):
+            XS1QS3 = 0
+        elif (waterleveluser >= 50):
+            XS1QS3 = 325.125
 
-# Funktion, um den Plot zu erstellen und zu speichern
-def plot_data(data, output_filename, valid_particle_count, avg_velocity, section_number, radius=0.05, font_size=40):
-    Y = data[:, 0]
-    Z = data[:, 1]
-    velocity = data[:, 2]
+        XS1QS4 = (waterleveluser ** 2)/2
+        if (waterleveluser >= 20):
+            XS1QS4 = 200
 
-    plt.figure(figsize=(38.4, 21.6), dpi=100)
-    cmap = create_custom_cmap()
-    scatter = plt.scatter(Y, Z, c=velocity, cmap=cmap, vmin=0, vmax=2, alpha=1.0, s=np.pi * (radius * 10) ** 2)
+        #20Grad geneigte Wand links am Querschnitt XS1
+        angle2 = math.radians(20)
+        XS1QS5 = ((waterleveluser ** 2)*math.tan(angle2))/2
 
-    plt.gca().set_facecolor('white')
+        XS1QS6 = (((waterleveluser - 50) ** 2)*math.tan(angle2))/2
+        if (waterleveluser <= 50):
+            XS1QS6 = 0
 
-    plt.xlabel('Y Values (m)', fontsize=font_size)  # Y-Wert jetzt in Meter
-    plt.ylabel('Z Values (m)', fontsize=font_size)  # Z-Wert jetzt in Meter
-    plt.title(f'Section {section_number} Results (Anzahl: {valid_particle_count}, Durchschnitt Velocity: {avg_velocity:.2f} m/s)', fontsize=font_size + 4)
+        XS1QS7 = ((waterleveluser - 50) * 62.5)
+        if (waterleveluser <= 50):
+            XS1QS7 = 0
 
-    plt.gca().yaxis.set_major_locator(MultipleLocator(0.02))  # Achsenbeschriftung in Metern
-    plt.grid(True, which='both', axis='y', linestyle='--', color='gray', linewidth=0.7)
+        SUMXS1QS = XS1QS1 + XS1QS2 + XS1QS3 + XS1QS4 + XS1QS5 + XS1QS6 + XS1QS7
 
-    #plt.xlim(-2.54, 0.91)  # Werte auf Meter angepasst
-    plt.ylim(-0.01, 0.5)  # Werte auf Meter angepasst
+        # XS2 Messpunkt Berechnung: Insgesamt 7 Querschnittsteile
+        XS4QS1 = (waterleveluser - 22.5) * 50
+        if (waterleveluser <= 22.5):
+            XS4QS1 = 0
 
-    cbar = plt.colorbar(scatter, ticks=np.arange(0, 2.1, 0.2), orientation='horizontal')  # Farblegende für Velocity in m/s
-    cbar.set_label('Velocity (m/s)', fontsize=font_size)
-    cbar.ax.tick_params(labelsize=font_size)
+        XS4QS2 = (waterleveluser ** 2)
+        if (waterleveluser >= 22.5):
+            XS4QS2 = 22.5 ** 2
 
-    plt.xticks(fontsize=font_size)
-    plt.yticks(fontsize=font_size)
+        XS4QS3 = waterleveluser * 40
 
-    plt.savefig(output_filename, format='png', bbox_inches='tight')
-    plt.close()
+        XS4QS4 = (waterleveluser ** 2)
+        if (waterleveluser >= 65):
+            XS4QS4 = 65 ** 2
 
-# Pfad zur .txt Datei (bitte den Pfad anpassen)
-file_path = r'D:\Bachelorarbeit\UE5.4\TechnicalFishPass\Saved\Logs\TechnicalFishPass.log'
+        XS4QS5 = ((waterleveluser - 65) * 160)
+        if (waterleveluser <= 65):
+            XS4QS5 = 0
 
-# Daten extrahieren und pro Abschnitt plotten
-sections = extract_sections_from_file(file_path)
+        SUMXS4QS = XS4QS1 + XS4QS2 + XS4QS3 + XS4QS4 + XS4QS5
 
-for section_number, section in enumerate(sections, start=1):
-    data = extract_valid_particles(section)
-    valid_particle_count = len(data)  # Anzahl der gültigen Partikel
-    avg_velocity = calculate_average_velocity(data)  # Durchschnitt der gültigen Velocity berechnen
+        #UProfil CS1 Berechnung
+        #CS1BoolBox = (option8_var.get())
+        #if(CS1BoolBox == True):
+        #    CS1WaterLevel = float(entry5.get())
+         #   velocityuser = float(entry6.get())
+        #else:
+            # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
+        #    messagebox.showerror("Fehler", "Füllen Sie bitte alle Eingabfelder aus")
 
-    if valid_particle_count > 0:
-        print(f'Section {section_number}: Anzahl der gültigen Partikel: {valid_particle_count}')
-        print(f'Section {section_number}: Durchschnittliche Velocity: {avg_velocity:.2f} m/s')
-        output_filename = f'section_plot_{section_number}.png'
-        plot_data(data, output_filename, valid_particle_count, avg_velocity, section_number, font_size=30)
+        #CS1SUM = CS1WaterLevel * 6 
+        #result = 1500000 / CS1SUM
+
+
+        if (XS1BoolBox == True and XS2BoolBox == False and XS3BoolBox == False and XS4BoolBox == False):
+            SUM = SUMXS1QS
+        #elif (XS2BoolBox == True and XS1BoolBox == False and XS3BoolBox == False and XS4BoolBox == False):
+        #    SUM = SUMXS2QS
+        #elif (XS3BoolBox == True and XS1BoolBox == False and XS2BoolBox == False and XS4BoolBox == False):
+        #    SUM = SUMXS3QS
+        elif (XS4BoolBox == True and XS1BoolBox == False and XS2BoolBox == False and XS3BoolBox == False):
+            SUM = SUMXS4QS
+        elif (XS1BoolBox == True and XS4BoolBox == True):
+            # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
+            messagebox.showerror("Fehler", "Bitte wählen Sie nur EINEN Messpunkt")
+        else:
+            # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
+            messagebox.showerror("Fehler", "Bitte wählen Sie einen Messpunkt")
+
+
+
+        if (HQ100 == True and MQ == False and Q30 == False):
+            result = 1000000 / SUM
+        elif (MQ == True and Q30 == False and HQ100 == False):
+            result = 135000 / SUM
+        elif (Q30 == True and HQ100 == False and MQ == False):
+            result = 60000 / SUM
+        else:
+            # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
+            messagebox.showerror("Fehler", "Bitte wählen Sie ein Szenario für die Berechnung aus.")
+
+
+        #Vergleich mit gemessener Geschwindigkeit
+        Abweichung = ((velocityuser - result) / result) * 100
+        result = round(result, 2)
+        Abweichung = round(Abweichung, 2)
+        Empfehlung = "Das Fluid ist zu viskos"
+        if (Abweichung >= 0):
+            Empfehlung = "Das Fluid ist zu flüssig"
+        messagebox.showinfo("Berechnungsergebnis", f"Das Ergebnis der Berechnung ist: {result} cm/s"
+                                                   f"\n"
+                                                   f"\n{Empfehlung},um {Abweichung} %")
+        #messagebox.showinfo("Berechnungsergebnis", f"Die Abweichung der Berechnung ist: {Abweichung}%")
+
+
+        if (XS1BoolBox == True):
+            calculate.SpeedValue1 = result
+            if (HQ100 == True and MQ == False and Q30 == False):
+                calculate.XS1AbflussMenge = (velocityuser * SUMXS1QS) / 1000000
+            elif (MQ == True and Q30 == False and HQ100 == False):
+                calculate.XS1AbflussMenge = (velocityuser * SUMXS1QS) / 135000
+            elif (Q30 == True and HQ100 == False and MQ == False):
+                calculate.XS1AbflussMenge = (velocityuser * SUMXS1QS) / 60000
+
+
+        elif(XS4BoolBox == True):
+            calculate.SpeedValue2 = result
+            if (HQ100 == True and MQ == False and Q30 == False):
+                calculate.XS4AbflussMenge = (velocityuser * SUMXS4QS) / 1000000
+            elif (MQ == True and Q30 == False and HQ100 == False):
+                calculate.XS4AbflussMenge = (velocityuser * SUMXS4QS) / 135000
+            elif (Q30 == True and HQ100 == False and MQ == False):
+                calculate.XS4AbflussMenge = (velocityuser * SUMXS4QS) / 60000
+
+
+
+
+    except ValueError:
+        # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
+        messagebox.showerror("Fehler", "Bitte geben Sie eine gültige Zahl in Water Level ein.")
+    return result
+
+def massebilanz():
+    try:
+        SpeedValue1 = calculate.SpeedValue1
+        SpeedValue2 = calculate.SpeedValue2
+        XS1AbflussMenge = calculate.XS1AbflussMenge
+        XS4AbflussMenge = calculate.XS4AbflussMenge
+
+        Abweichung = ((XS1AbflussMenge / XS4AbflussMenge) - 1) * 100
+        if Abweichung <= 0:
+            Abweichung = Abweichung * (-1)
+        Abweichung = round(Abweichung, 2)
+        XS1AbflussMenge = round(XS1AbflussMenge, 2)
+        XS4AbflussMenge = round(XS4AbflussMenge, 2)
+
+        messagebox.showinfo("Berechnungsergebnis", f"XS1 Bilanz : {XS1AbflussMenge} m^3/s\nXS4 Bilanz : {XS4AbflussMenge} m^3/s"
+                                               f"\nDie Abweichung beider Werte ist {Abweichung} %")
+
+    except AttributeError:
+        # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
+        messagebox.showerror("Fehler", "Bitte berechnen Sie noch XS4 für die Bilanzergebnisse.")
+
+# Hauptfenster erstellen
+root = tk.Tk()
+root.title("Berechnung der Viskosität")
+
+option4_var = tk.BooleanVar()
+option5_var = tk.BooleanVar() #XS2
+option6_var = tk.BooleanVar() #XS3
+option7_var = tk.BooleanVar()
+
+option8_var = tk.BooleanVar() #UProfilCheckBox
+option9_var = tk.BooleanVar()
+
+tk.Checkbutton(root, text="Messpunkt XS1", variable=option4_var).grid(row=0, column=0, columnspan=1, padx=10, pady=10)
+#tk.Checkbutton(root, text="Messpunkt XS2", variable=option5_var).grid(row=0, column=1, padx=10, pady=10)
+#tk.Checkbutton(root, text="Messpunkt XS3", variable=option6_var).grid(row=0, column=2, padx=10, pady=10)
+tk.Checkbutton(root, text="Messpunkt XS4", variable=option7_var).grid(row=0, column=1, columnspan=1,padx=10, pady=10)
+
+#tk.Checkbutton(root, text="Messpunkt UProfil CS1", variable=option8_var).grid(row=0, column=5, columnspan=1, padx=10, pady=10)
+#tk.Checkbutton(root, text="Bilanz XS2 und XS3", variable=option9_var).grid(row=5, column=1, columnspan=1, padx=10, pady=10)
+
+
+# Eingabefelder
+tk.Label(root, text="Water Level:").grid(row=1, column=0, columnspan=1, padx=10, pady=10)
+entry1 = tk.Entry(root)
+entry1.grid(row=1, column=1, columnspan=1, padx=10, pady=10)
+
+tk.Label(root, text="Velocity:").grid(row=2, column=0, columnspan=1, padx=10, pady=10)
+entry2 = tk.Entry(root)
+entry2.grid(row=2, column=1, columnspan=1, padx=10, pady=10)
+
+tk.Label(root, text="Water Level2:").grid(row=1, column=2, columnspan=1, padx=10, pady=10)
+entry3 = tk.Entry(root)
+entry3.grid(row=1, column=3, columnspan=1, padx=10, pady=10)
+
+tk.Label(root, text="Velocity2:").grid(row=2, column=2, columnspan=1, padx=10, pady=10)
+entry4 = tk.Entry(root)
+entry4.grid(row=2, column=3, columnspan=1, padx=10, pady=10)
+
+#tk.Label(root, text="Water Level UProfil:").grid(row=1, column=4, columnspan=1, padx=10, pady=10)
+#entry5 = tk.Entry(root)
+#entry5.grid(row=1, column=5, columnspan=1, padx=10, pady=10)
+
+#tk.Label(root, text="Velocity UProfil:").grid(row=2, column=4, columnspan=1, padx=10, pady=10)
+#entry6 = tk.Entry(root)
+#entry6.grid(row=2, column=5, columnspan=1, padx=10, pady=10)
+
+
+
+# Auswahlfelder
+option1_var = tk.BooleanVar()
+option2_var = tk.BooleanVar()
+option3_var = tk.BooleanVar()
+#option4_var = tk.BooleanVar()
+
+tk.Checkbutton(root, text="HQ100=1m^3/s", variable=option1_var).grid(row=3, column=0, columnspan=1, padx=10, pady=10)
+tk.Checkbutton(root, text="MQ=0,135m^3/s", variable=option2_var).grid(row=3, column=1, columnspan=1, padx=10, pady=10)
+tk.Checkbutton(root, text="Q30=0,06m^3/s", variable=option3_var).grid(row=3, column=2, columnspan=1, padx=10, pady=10)
+#tk.Checkbutton(root, text="QUProfil=1,5m^3/s", variable=option4_var).grid(row=3, column=5, columnspan=1, padx=10, pady=10)
+
+
+
+# Button zum Anzeigen der ausgewählten Optionen
+tk.Button(root, text="Massebilanz nachweisen", command=massebilanz).grid(row=6, column=0, columnspan=5, pady=20)
+
+# Button zur Berechnung
+tk.Button(root, text="Berechnung durchführen", command=calculate).grid(row=4, column=0, columnspan=5, pady=20)
+
+# Hauptschleife starten
+root.mainloop()
