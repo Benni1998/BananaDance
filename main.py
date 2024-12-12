@@ -43,62 +43,67 @@ def calculate():
         # Fehlermeldung anzeigen, falls die Eingabe keine gültige Zahl ist
         # messagebox.showerror("Fehler", "Füllen Sie bitte alle Eingabfelder aus")
 
-        # XS1 Messpunkt Berechnung: Insgesamt 7 Querschnittsteile
-        XS1QS1 = waterleveluser * 40
-        XS1QS2 = ((waterleveluser - 20) * 107.5) - ((4.5 * 87.5) / 2)
 
-        # Bedingung: Dreieck abziehen (4,5cm) auf 87,5cm länge zusätzlich keine Werte, wenn Wasserstand kleiner gleich 20cm
+        # XS1 Messpunkt Berechnung: Insgesamt 9 Querschnittsteile:
+
+        #Sind ja wie gesagt 43cm und net 40cm
+        XS1QS1 = waterleveluser * 43
+
+        #Winkel der Wand 70Grad also Innenwinkel = 20Grad für tan Berechnung
+        angle2 = math.radians(20)
+        XS1QS2 = ((waterleveluser ** 2) * math.tan(angle2)) / 2
+
+        # Berechnen der anderen Flächen
         if waterleveluser <= 20:
-            XS1QS2 = 0
-        elif waterleveluser <= 24.5:
-            # 2,944 Grad in Radiant umrechnen
-            angle1 = math.radians(2.944)
-            # Tangens von 2,944 Grad berechnen und die Länge des Dreickes bestimmen
-            length1 = (waterleveluser - 20) / math.tan(angle1)
-            XS1QS2 = ((waterleveluser - 20) * 107.5) - (((waterleveluser - 20) * length1) / 2)
+            XS1QS3 = (waterleveluser ** 2) * 0.5
+            XS1QS4 = XS1QS5 = XS1QS6 = XS1QS7 = XS1QS8 = XS1QS9 = 0
 
-        XS1QS3 = ((waterleveluser - 24.5) ** 2) / 2
-        if waterleveluser <= 24.5:
-            XS1QS3 = 0
-        elif waterleveluser >= 50:
-            XS1QS3 = 325.125
+        if (waterleveluser > 20) & (waterleveluser <= 24.5):
+            XS1QS3 = 200
+            XS1QS4 = 20 * (waterleveluser - 20)
+            XS1QS5 = 87.5 * 0.5 * (waterleveluser - 20)
+            XS1QS6 = XS1QS7 = XS1QS8 = XS1QS9 = 0
 
-        XS1QS4 = (waterleveluser ** 2) / 2
-        if waterleveluser >= 20:
-            XS1QS4 = 200
+        if (waterleveluser > 24.5) & (waterleveluser <= 50):
+            XS1QS3 = 200
+            XS1QS4 = 20 * (waterleveluser - 20)
+            XS1QS5 = 87.5 * 0.5 * 4.5
+            XS1QS6 = 87.5 * (waterleveluser - 24.5)
+            XS1QS7 = 0.5 * ((waterleveluser - 24.5)**2)
+            XS1QS8 = XS1QS9 = 0
 
-        # 50 Grad geneigte Wand links am Querschnitt XS1
-        angle2 = math.radians(77)
-        XS1QS5 = ((waterleveluser ** 2) * math.tan(angle2)) / 2
+        if waterleveluser > 50:
+            XS1QS3 = 200
+            XS1QS4 = 20 * (waterleveluser - 20)
+            XS1QS5 = 87.5 * 0.5 * 4.5
+            XS1QS6 = 87.5 * (waterleveluser - 24.5)
+            XS1QS7 = 0.5 * ((25.5)**2)
+            XS1QS8 = (33.5 + 25.5) * (waterleveluser - 50)
 
-        XS1QS6 = (((waterleveluser - 50) ** 2) * math.tan(angle2)) / 2
-        if waterleveluser <= 50:
-            XS1QS6 = 0
+            #selber Winkel 70Grad wie linke Wand daher nochmal 20Grad zur Berechnung
+            XS1QS9 = (((waterleveluser - 50) ** 2) * math.tan(angle2)) / 2
 
-        XS1QS7 = ((waterleveluser - 50) * 62.5)
-        if waterleveluser <= 50:
-            XS1QS7 = 0
-
-        SUMXS1QS = XS1QS1 + XS1QS2 + XS1QS3 + XS1QS4 + XS1QS5 + XS1QS6 + XS1QS7
+        SUMXS1QS = XS1QS1 + XS1QS2 + XS1QS3 + XS1QS4 + XS1QS5 + XS1QS6 + XS1QS7 + XS1QS8 + XS1QS9
+        print(SUMXS1QS)
 
         # XS4 Messpunkt Berechnung: Insgesamt 7 Querschnittsteile
 
         if waterleveluser <= 22.5:
-            print("Groundfloor")
+            #print("Groundfloor")
             XS4QS1 = 0.
             XS4QS2 = waterleveluser * (40 + 2 * waterleveluser)
             XS4QS3 = 0.
             XS4QS4 = 0.
             XS4QS5 = 0.
         if (waterleveluser > 22.5) & (waterleveluser <= 65):
-            print("First floor")
+            #print("First floor")
             XS4QS1 = (waterleveluser - 22.5) * 5.
             XS4QS2 = 22.5 * (40 + 2 * 22.5)
             XS4QS3 = (waterleveluser - 22.5) * (40 + 2 * 2 * waterleveluser)
             XS4QS4 = 0.5 * (waterleveluser - 22.5) * (130 - 22.5 * 2)
             XS4QS5 = 0.
         if waterleveluser > 65:
-            print("Second floor")
+            #print("Second floor")
             XS4QS1 = (waterleveluser - 22.5) * 5.
             XS4QS2 = 22.5 * (40 + 2 * 22.5)
             XS4QS3 = (65 - 22.5) * (40 + 2 * 2 * 65)
@@ -252,4 +257,3 @@ tk.Button(root, text="Berechnung durchführen", command=calculate).grid(row=4, c
 
 # Hauptschleife starten
 root.mainloop()
-
