@@ -1,0 +1,239 @@
+import tkinter as tk
+from tkinter import messagebox
+import math
+
+
+def show_selected_options():
+    # Eingabefelder auslesen
+    input1 = entry1.get()
+    input2 = entry2.get()
+
+    # Optionen auslesen
+    selected_options = []
+    if option1_var.get():
+        selected_options.append("Option 1")
+    if option2_var.get():
+        selected_options.append("Option 2")
+    if option3_var.get():
+        selected_options.append("Option 3")
+
+    # Ergebnis anzeigen
+    messagebox.showinfo(
+        "Selected Options",
+        f"Eingabefeld 1: {input1}\nEingabefeld 2: {input2}\nAusgewählt: {', '.join(selected_options)}"
+    )
+
+
+def calculate():
+    try:
+        # Wert aus Eingabefeld 1 auslesen und in eine Zahl umwandeln
+        HQ100 = option1_var.get()
+        MQ = option2_var.get()
+        Q30 = option3_var.get()
+        XS1_bool_box = option4_var.get()
+        XS2_bool_box = option5_var.get()
+        XS3_bool_box = option6_var.get()
+        XS4_bool_box = option7_var.get()
+
+        if XS1_bool_box:
+            waterlevel_user = float(entry1.get())
+            velocity_user = float(entry2.get())
+        elif XS4_bool_box:
+            waterlevel_user = float(entry3.get())
+            velocity_user = float(entry4.get())
+
+        # XS1 Messpunkt Berechnung: Insgesamt 9 Querschnittsteile
+        # Trapezbodenbreite 43cm nicht 40cm
+        XS1_QS1 = waterlevel_user * 43
+
+        # Winkel der Wand 70Grad also Innenwinkel = 20Grad für tan Berechnung
+        angle2 = math.radians(20)
+        XS1_QS2 = ((waterlevel_user ** 2) * math.tan(angle2)) / 2
+
+        # Berechnen der XS Teilquerschnittsflaechen QS
+        if waterlevel_user <= 20:
+            XS1_QS3 = (waterlevel_user ** 2) * 0.5
+            XS1_QS4 = XS1_QS5 = XS1_QS6 = XS1_QS7 = XS1_QS8 = XS1_QS9 = 0.
+
+        if 20 < waterlevel_user <= 24.5:
+            XS1_QS3 = 200
+            XS1_QS4 = 20 * (waterlevel_user - 20)
+            XS1_QS5 = 87.5 * 0.5 * (waterlevel_user - 20)
+            XS1_QS6 = XS1_QS7 = XS1_QS8 = XS1_QS9 = 0
+
+        if 24.5 < waterlevel_user <= 50:
+            XS1_QS3 = 200
+            XS1_QS4 = 20 * (waterlevel_user - 20)
+            XS1_QS5 = 87.5 * 0.5 * 4.5
+            XS1_QS6 = 87.5 * (waterlevel_user - 24.5)
+            XS1_QS7 = 0.5 * ((waterlevel_user - 24.5) ** 2)
+            XS1_QS8 = XS1_QS9 = 0
+
+        if waterlevel_user > 50:
+            XS1_QS3 = 200
+            XS1_QS4 = 20 * (waterlevel_user - 20)
+            XS1_QS5 = 87.5 * 0.5 * 4.5
+            XS1_QS6 = 87.5 * (waterlevel_user - 24.5)
+            XS1_QS7 = 0.5 * (25.5 ** 2)
+            XS1_QS8 = (33.5 + 25.5) * (waterlevel_user - 50)
+
+            # Winkel 70Grad wie linke Wand, daher nochmal 20Grad zur Berechnung
+            XS1_QS9 = (((waterlevel_user - 50) ** 2) * math.tan(angle2)) / 2
+
+        sum_XS1_QS = sum(
+            [XS1_QS1, XS1_QS2, XS1_QS3, XS1_QS4, XS1_QS5, XS1_QS6, XS1_QS7, XS1_QS8, XS1_QS9]
+        )
+        print(sum_XS1_QS)
+
+        # XS4 Messpunkt Berechnung: Insgesamt 7 Querschnittsteile
+        if waterlevel_user <= 22.5:
+            print("Groundfloor")
+            XS4_QS1 = 0.
+            XS4_QS2 = waterlevel_user * (40 + 2 * waterlevel_user)
+            XS4_QS3 = XS4_QS4 = XS4_QS5 = 0.
+        elif 22.5 < waterlevel_user <= 65:
+            print("First floor")
+            XS4_QS1 = (waterlevel_user - 22.5) * 5.
+            XS4_QS2 = 22.5 * (40 + 2 * 22.5)
+            XS4_QS3 = (waterlevel_user - 22.5) * (40 + 2 * 2 * waterlevel_user)
+            XS4_QS4 = 0.5 * (waterlevel_user - 22.5) * (130 - 22.5 * 2)
+            XS4_QS5 = 0.
+        else:
+            print("Second floor")
+            XS4_QS1 = (waterlevel_user - 22.5) * 5.
+            XS4_QS2 = 22.5 * (40 + 2 * 22.5)
+            XS4_QS3 = (65 - 22.5) * (40 + 2 * 2 * 65)
+            XS4_QS4 = 0.5 * (65 - 22.5) * (130 - 22.5 * 2)
+            XS4_QS5 = (250 - 5) * (waterlevel_user - 65)
+
+        sum_XS4_QS = sum([XS4_QS1, XS4_QS2, XS4_QS3, XS4_QS4, XS4_QS5])
+
+        if XS1_bool_box and not XS2_bool_box and not XS3_bool_box and not XS4_bool_box:
+            total_sum = sum_XS1_QS
+        elif XS4_bool_box and not XS1_bool_box and not XS2_bool_box and not XS3_bool_box:
+            total_sum = sum_XS4_QS
+        elif XS1_bool_box and XS4_bool_box:
+            # Fehlermeldung anzeigen
+            messagebox.showerror("Fehler", "Bitte wählen Sie nur EINEN Messpunkt")
+        else:
+            # Fehlermeldung anzeigen
+            messagebox.showerror("Fehler", "Bitte wählen Sie einen Messpunkt")
+
+        if HQ100 and not MQ and not Q30:
+            result = 1000000 / total_sum
+        elif MQ and not Q30 and not HQ100:
+            result = 135000 / total_sum
+        elif Q30 and not HQ100 and not MQ:
+            result = 60000 / total_sum
+        else:
+            # Fehlermeldung anzeigen
+            messagebox.showerror("Fehler", "Bitte wählen Sie ein Szenario für die Berechnung aus.")
+
+        # Vergleich mit gemessener Geschwindigkeit
+        deviation = (velocity_user - result) / result * 100
+        result = round(result, 2)
+        deviation = round(deviation, 2)
+        recommendation = "Das Fluid ist zu viskos"
+        if deviation >= 0:
+            recommendation = "Das Fluid ist zu flüssig"
+        messagebox.showinfo(
+            "Berechnungsergebnis",
+            f"Das Ergebnis der Berechnung ist: {result} cm/s\n\n{recommendation}, um {deviation} %"
+        )
+
+        if XS1_bool_box:
+            calculate.speed_value1 = result
+            if HQ100 and not MQ and not Q30:
+                calculate.XS1_abfluss_menge = (velocity_user * sum_XS1_QS) / 1000000
+            elif MQ and not Q30 and not HQ100:
+                calculate.XS1_abfluss_menge = (velocity_user * sum_XS1_QS) / 135000
+            elif Q30 and not HQ100 and not MQ:
+                calculate.XS1_abfluss_menge = (velocity_user * sum_XS1_QS) / 60000
+
+        elif XS4_bool_box:
+            calculate.speed_value2 = result
+            if HQ100 and not MQ and not Q30:
+                calculate.XS4_abfluss_menge = (velocity_user * sum_XS4_QS) / 1000000
+            elif MQ and not Q30 and not HQ100:
+                calculate.XS4_abfluss_menge = (velocity_user * sum_XS4_QS) / 135000
+            elif Q30 and not HQ100 and not MQ:
+                calculate.XS4_abfluss_menge = (velocity_user * sum_XS4_QS) / 60000
+
+    except ValueError:
+        messagebox.showerror("Fehler", "Bitte geben Sie eine gültige Zahl in Water Level ein.")
+    return result
+
+
+def massebilanz():
+    try:
+        speed_value1 = calculate.speed_value1
+        speed_value2 = calculate.speed_value2
+        XS1_abfluss_menge = calculate.XS1_abfluss_menge
+        XS4_abfluss_menge = calculate.XS4_abfluss_menge
+
+        deviation = ((XS1_abfluss_menge / XS4_abfluss_menge) - 1) * 100
+        if deviation <= 0:
+            deviation = deviation * -1
+        deviation = round(deviation, 2)
+        XS1_abfluss_menge = round(XS1_abfluss_menge, 2)
+        XS4_abfluss_menge = round(XS4_abfluss_menge, 2)
+
+        messagebox.showinfo(
+            "Berechnungsergebnis",
+            f"XS1 Bilanz : {XS1_abfluss_menge} m^3/s\nXS4 Bilanz : {XS4_abfluss_menge} m^3/s"
+            f"\nDie Abweichung beider Werte ist {deviation} %"
+        )
+
+    except AttributeError:
+        messagebox.showerror("Fehler", "Bitte berechnen Sie noch XS4 für die Bilanzergebnisse.")
+
+
+# Hauptfenster erstellen
+root = tk.Tk()
+root.title("Berechnung der Viskosität")
+
+option4_var = tk.BooleanVar()
+option5_var = tk.BooleanVar()  # XS2
+option6_var = tk.BooleanVar()  # XS3
+option7_var = tk.BooleanVar()
+
+option8_var = tk.BooleanVar()  # UProfilCheckBox
+option9_var = tk.BooleanVar()
+
+tk.Checkbutton(root, text="Messpunkt XS1", variable=option4_var).grid(row=0, column=0, padx=10, pady=10)
+tk.Checkbutton(root, text="Messpunkt XS4", variable=option7_var).grid(row=0, column=1, padx=10, pady=10)
+
+# Eingabefelder
+tk.Label(root, text="Water Level:").grid(row=1, column=0, padx=10, pady=10)
+entry1 = tk.Entry(root)
+entry1.grid(row=1, column=1, padx=10, pady=10)
+
+tk.Label(root, text="Velocity:").grid(row=2, column=0, padx=10, pady=10)
+entry2 = tk.Entry(root)
+entry2.grid(row=2, column=1, padx=10, pady=10)
+
+tk.Label(root, text="Water Level2:").grid(row=1, column=2, padx=10, pady=10)
+entry3 = tk.Entry(root)
+entry3.grid(row=1, column=3, padx=10, pady=10)
+
+tk.Label(root, text="Velocity2:").grid(row=2, column=2, padx=10, pady=10)
+entry4 = tk.Entry(root)
+entry4.grid(row=2, column=3, padx=10, pady=10)
+
+# Auswahlfelder
+option1_var = tk.BooleanVar()
+option2_var = tk.BooleanVar()
+option3_var = tk.BooleanVar()
+
+tk.Checkbutton(root, text="HQ100=1m^3/s", variable=option1_var).grid(row=3, column=0, padx=10, pady=10)
+tk.Checkbutton(root, text="MQ=0,135m^3/s", variable=option2_var).grid(row=3, column=1, padx=10, pady=10)
+tk.Checkbutton(root, text="Q30=0,06m^3/s", variable=option3_var).grid(row=3, column=2, padx=10, pady=10)
+
+# Button zum Anzeigen der ausgewählten Optionen
+tk.Button(root, text="Massebilanz nachweisen", command=massebilanz).grid(row=6, column=0, columnspan=5, pady=20)
+
+# Button zur Berechnung
+tk.Button(root, text="Berechnung durchführen", command=calculate).grid(row=4, column=0, columnspan=5, pady=20)
+
+# Hauptschleife starten
+root.mainloop()
