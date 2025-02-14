@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 import matplotlib.pyplot as plt
@@ -8,7 +9,13 @@ import pandas as pd
 from matplotlib.gridspec import GridSpec
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.ticker import MultipleLocator
-#from config import FILE_PATH, CREATE_PICTURES, LIMIT_DATA, LIMIT
+
+# from config import FILE_PATH, CREATE_PICTURES, LIMIT_DATA, LIMIT
+
+# set the default font to Open Sans and font size to 11 for all text
+plt.rcParams['font.family'] = 'Open Sans'
+plt.rcParams['font.size'] = 11
+
 
 class DataExtractor:
     """
@@ -52,6 +59,7 @@ class DataExtractor:
             sections.append(current_section)
 
         return sections
+
 
 class Calculation:
     """
@@ -254,7 +262,8 @@ class Plotter:
     Generates scatter plots visualizing particle data.
     """
 
-    def __call__(self, data, avg_particles, sd_velocity, valid_particle_count, avg_velocity, section_number, xlim_left, xlim_right):
+    def __call__(self, data, avg_particles, sd_velocity, valid_particle_count, avg_velocity, section_number, xlim_left,
+                 xlim_right):
         """
         Creates a plot for the given particle data.
 
@@ -265,7 +274,15 @@ class Plotter:
         :param avg_velocity: Average velocity of particles.
         :param section_number: Section number being processed.
         """
-        self.plot_data(data, avg_particles, sd_velocity, valid_particle_count, avg_velocity, section_number,xlim_left, xlim_right)
+        self.plot_data(
+            data,
+            avg_particles, sd_velocity,
+            valid_particle_count,
+            avg_velocity,
+            section_number,
+            xlim_left,
+            xlim_right,
+        )
 
     @staticmethod
     def create_custom_cmap():
@@ -285,7 +302,8 @@ class Plotter:
         ]
         return LinearSegmentedColormap.from_list('custom_rainbow', colors)
 
-    def plot_data(self, data, avg_particles, sd_velocity, valid_particle_count, avg_velocity, section_number,xlim_left, xlim_right):
+    def plot_data(self, data, avg_particles, sd_velocity, valid_particle_count, avg_velocity, section_number, xlim_left,
+                  xlim_right):
         """
         Creates and saves a scatter plot for the data.
 
@@ -308,7 +326,7 @@ class Plotter:
 
         :return: Tuple (Figure, scatter axis, colorbar axis).
         """
-        fig = plt.figure(figsize=(19.2, 10.8), dpi=100)
+        fig = plt.figure(figsize=(8, 6), dpi=300)
         gs = GridSpec(2, 1, height_ratios=[0.1, 0.9])
         return fig, fig.add_subplot(gs[1]), fig.add_subplot(gs[0])
 
@@ -323,12 +341,13 @@ class Plotter:
         cmap = self.create_custom_cmap()
         ax.scatter(Y, Z, c=velocity, cmap=cmap, vmin=0, vmax=2, alpha=1.0, s=np.pi * (0.1 * 10) ** 2)
         ax.set_facecolor('white')
-        ax.set_xlabel('Y Values (m)', fontsize=18)
-        ax.set_ylabel('Z Values (m)', fontsize=18)
+        ax.set_xlabel('Y Values (m)')
+        ax.set_ylabel('Z Values (m)')
         ax.yaxis.set_major_locator(MultipleLocator(0.01))
         ax.grid(True, which='both', linestyle='--', color='gray', linewidth=0.7)
         ax.set_ylim(0, 0.8)
         ax.set_xlim(xlim_left, xlim_right)
+        # missing: set yticks to 0.1 or 0.2
         ax.tick_params(labelsize=10)
 
     def reduce_particles(self, data, limit):
@@ -359,7 +378,7 @@ class Plotter:
         """
         scatter = fig.axes[0].collections[0]
         cbar = fig.colorbar(scatter, cax=ax, orientation='horizontal', pad=0.0)
-        cbar.set_label('Velocity (m/s)', fontsize=18, labelpad=10)
+        cbar.set_label('Velocity (m/s)', labelpad=10)
         cbar.ax.xaxis.set_label_position('top')
         cbar.ax.tick_params(labelsize=8)
 
@@ -375,10 +394,12 @@ class Plotter:
             sd_velocity (float): Standard deviation of velocity.
             section_number (int): Section number being processed.
         """
-        fig.suptitle(f'Section {section_number} Results\n'
-                     f'Particles: {count}, Average particles: {avg_particle},\n'
-                     f'Average velocity: {avg_velocity:.3f} m/s, sd velocity: {sd_velocity:.3f}',
-                     fontsize=18, y=0.01)
+        fig.suptitle(
+            f'Section {section_number} Results\n'
+            f'Particles: {count}, Average particles: {avg_particle},\n'
+            f'Average velocity: {avg_velocity:.3f} m/s, sd velocity: {sd_velocity:.3f}',
+            y=0.01,
+        )
 
     def save_plot(self, fig, section_number):
         """
@@ -391,9 +412,10 @@ class Plotter:
         plt.savefig(output_filename, format='png', bbox_inches='tight')
         plt.close()
 
-class Main:
+
+class Driver:
     """
-    Main driver class to process the log file, analyze sections, and generate plots.
+    Driver class to process the log file, analyze sections, and generate plots.
     """
 
     def __init__(self, file_path):
@@ -431,10 +453,9 @@ class Main:
         # Calculate average particle counts using the new method
         avg_particles = calculation.calculate_average_particle_count(sections)
 
-
         # Process each section and generate plots
         for section_number, section in enumerate(sections, start=1):
-           self.process_section(section, calculation, plotter, avg_particles, section_number)
+            self.process_section(section, calculation, plotter, avg_particles, section_number)
 
         df = pd.DataFrame(self.data_list)
 
@@ -444,7 +465,6 @@ class Main:
         print(df.head(5))
         print("mean sd_velocity: " + str(mean_value))
         print(df_sorted.head(5))
-
 
     def process_section(self, section, calculation, plotter, avg_particles, section_number):
         """
@@ -457,7 +477,6 @@ class Main:
             avg_particles (list): Average particle count across sections.
             section_number (int): Section number being processed.
         """
-
 
         data = calculation(section)
         valid_particle_count = len(data)
@@ -483,20 +502,22 @@ class Main:
                 "avg_velocity": avg_velocity
             })
 
-
-
             if self.create_pictures:
-                if self.limit_Data :
+                if self.limit_Data:
                     reduced_data = plotter.reduce_particles(data, self.limit)
-                    plotter(reduced_data, avg_particle, sd_velocity, valid_particle_count, avg_velocity, section_number, left_value,right_value)
+                    plotter(reduced_data, avg_particle, sd_velocity, valid_particle_count, avg_velocity, section_number,
+                            left_value, right_value)
                 else:
                     # Pass the specific average particle count to the plotter
-                    plotter(data, avg_particle, sd_velocity, valid_particle_count, avg_velocity, section_number, left_value,right_value)
+                    plotter(data, avg_particle, sd_velocity, valid_particle_count, avg_velocity, section_number,
+                            left_value, right_value)
         return rows
 
-if __name__ == "__main__":
-    file_path = r'D:\Bachelorarbeit\UE5.4\TechnicalFishPass\Saved\Logs\TechnicalFishPass.log'
-    main = Main(file_path)
-    main()
-    #r'D:\Bachelorarbeit\UE5.4\TechnicalFishPass\Saved\Logs\TechnicalFishPass.log'
 
+if __name__ == "__main__":
+    here = r'' + str(os.getcwd())
+    file_path = here + str(os.sep) + 'TechnicalFishPass.log'
+    # file_path = r'D:\Bachelorarbeit\UE5.4\TechnicalFishPass\Saved\Logs\TechnicalFishPass.log'
+    process = Driver(file_path)
+    process()
+    # r'D:\Bachelorarbeit\UE5.4\TechnicalFishPass\Saved\Logs\TechnicalFishPass.log'
